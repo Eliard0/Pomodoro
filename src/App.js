@@ -1,17 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import {
-  SafeAreaView, StatusBar, StyleSheet, Text, TouchableOpacity, useColorScheme, View
+  Platform,
+  SafeAreaView, StatusBar, StyleSheet, Text, TouchableOpacity, View
 } from 'react-native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
 import DataModal from './component/DataModal';
 import ModalBreakTime from './component/ModalBreakTime';
 
+import Sound from 'react-native-sound';
+
 function App() {
   const [statusTime, setStatusTime] = useState(false)
   const [activeModal, setActiveModal] = useState(false)
 
-  const [workTime, setWorkTime] = useState(1 * 60);
+  const [workTime, setWorkTime] = useState(0);
   const [breakTime, setBreakTime] = useState(0);
   const [timeLeft, setTimeLeft] = useState(workTime);
 
@@ -35,13 +38,15 @@ function App() {
       timer = setInterval(() => {
         setTimeLeft((prevTime) => prevTime - 1);
       }, 1000);
-    } else if (timeLeft == 0) {
+    } else if (statusTime && timeLeft == 0) {
       clearInterval(timer);
       setStatusTime(false);
 
       if (!initBreakTime) {
+        startSound()
         setShowBreakModal(true)
       } else {
+        startSound()
         setTimeLeft(workTime)
         setInitBreakTime(false)
       }
@@ -53,9 +58,8 @@ function App() {
   const formatTime = (time) => {
     const minutes = Math.floor(time / 60);
     const seconds = time % 60;
-    return `${minutes < 10 ? "0" : ""}${minutes}:${
-      seconds < 10 ? "0" : ""
-    }${seconds}`;
+    return `${minutes < 10 ? "0" : ""}${minutes}:${seconds < 10 ? "0" : ""
+      }${seconds}`;
   };
 
   function startBreak() {
@@ -63,6 +67,31 @@ function App() {
     setInitBreakTime(true);
     setTimeLeft(breakTime);
     setStatusTime(true);
+  }
+
+  function startSound() {
+    Sound.setCategory('Playback');
+
+    const baseOs = Platform.OS == 'ios' ? Sound.MAIN_BUNDLE : Sound.RES_RAW
+
+    const sound = new Sound('school.mp3', baseOs, (error) => {
+      if (error) {
+        console.log('Erro ao carregar o som:', error);
+        return;
+      }
+      sound.play((success) => {
+        if (success) {
+          console.log('Som tocado com sucesso!');
+        } else {
+          console.log('Erro ao tocar o som!');
+        }
+        sound.release();
+      });
+    });
+
+    return () => {
+      sound.release();
+    };
   }
 
   return (
@@ -73,7 +102,9 @@ function App() {
       />
       <View style={styles.viewTime}>
         <Text style={[styles.textViewTime, { color: statusTime ? 'red' : '#000' }]}>{formatTime(timeLeft)}</Text>
-        <TouchableOpacity style={[styles.actionsButton, { backgroundColor: statusTime ? 'red' : '#00A86B' }]} onPress={() => setStatusTime(!statusTime)}>
+        <TouchableOpacity
+          style={[styles.actionsButton, { backgroundColor: statusTime ? 'red' : '#00A86B' }]}
+          onPress={() => { if (timeLeft > 0) setStatusTime(!statusTime) }}>
           {statusTime == false ?
             <FontAwesome6 name="play" size={60} color='#F5F5F5' />
             :
