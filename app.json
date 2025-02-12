@@ -1,4 +1,7 @@
 {
   "name": "Pomodoro",
-  "displayName": "Pomodoro"
+  "displayName": "Pomodoro",
+  "react-native-google-mobile-ads": {
+    "android_app_id": ""
+  }
 }

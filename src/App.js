@@ -9,8 +9,12 @@ import DataModal from './component/DataModal';
 import ModalBreakTime from './component/ModalBreakTime';
 
 import Sound from 'react-native-sound';
+import { BannerAd, BannerAdSize, TestIds } from 'react-native-google-mobile-ads';
+
 
 function App() {
+  const adUnitId = __DEV__ ? TestIds.ADAPTIVE_BANNER : 'ca-app-pub-xxxxxxxxxxxxx/yyyyyyyyyyyyyy';
+
   const [statusTime, setStatusTime] = useState(false)
   const [activeModal, setActiveModal] = useState(false)
 
@@ -100,6 +104,10 @@ function App() {
         barStyle='light-content'
         backgroundColor={'#1B263B'}
       />
+      <View style={{position: 'absolute', top: 0}}>
+        <BannerAd unitId={adUnitId} size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER} />
+      </View>
+
       <View style={styles.viewTime}>
         <Text style={[styles.textViewTime, { color: statusTime ? 'red' : '#000' }]}>{formatTime(timeLeft)}</Text>
         <TouchableOpacity
@@ -135,7 +143,7 @@ const styles = StyleSheet.create({
   },
 
   viewTime: {
-    marginTop: '30%',
+    marginTop: '35%',
     alignItems: 'center',
 
   },
